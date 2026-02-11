@@ -48,6 +48,20 @@ export default function TiptapEditor({ content, onChange }: Props) {
     <div>
       {/* Toolbar */}
       <div className="flex flex-wrap gap-1 p-2 border-b border-gray-800 bg-gray-900/50">
+        {/* Undo/Redo */}
+        <ToolbarBtn
+          active={false}
+          onClick={() => editor.chain().focus().undo().run()}
+          label="↩"
+          disabled={!editor.can().undo()}
+        />
+        <ToolbarBtn
+          active={false}
+          onClick={() => editor.chain().focus().redo().run()}
+          label="↪"
+          disabled={!editor.can().redo()}
+        />
+        <span className="w-px h-6 bg-gray-700 self-center mx-1" />
         <ToolbarBtn
           active={editor.isActive('bold')}
           onClick={() => editor.chain().focus().toggleBold().run()}
@@ -122,16 +136,18 @@ export default function TiptapEditor({ content, onChange }: Props) {
 }
 
 function ToolbarBtn({
-  active, onClick, label, className = '',
+  active, onClick, label, className = '', disabled = false,
 }: {
-  active: boolean; onClick: () => void; label: string; className?: string
+  active: boolean; onClick: () => void; label: string; className?: string; disabled?: boolean
 }) {
   return (
     <button
       onClick={onClick}
+      disabled={disabled}
       className={`px-2 py-1 rounded text-sm transition-colors ${className} ${
+        disabled ? 'text-gray-600 cursor-not-allowed' :
         active
-          ? 'bg-indigo-600 text-white'
+          ? 'bg-[#C8FF00] text-black'
           : 'text-gray-400 hover:bg-gray-800 hover:text-white'
       }`}
     >

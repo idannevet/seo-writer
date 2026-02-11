@@ -44,7 +44,7 @@ export function getStatusLabel(status: string): string {
 export function getStatusColor(status: string): string {
   const map: Record<string, string> = {
     draft: 'bg-[#333]',
-    generated: 'bg-[#C8FF00]/80 !text-black',
+    generated: 'bg-cyan-600 !text-white',
     edited: 'bg-yellow-600',
     published: 'bg-[#C8FF00] !text-black',
   }

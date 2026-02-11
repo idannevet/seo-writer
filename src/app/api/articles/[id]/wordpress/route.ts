@@ -61,6 +61,7 @@ export async function POST(
     const postBody: Record<string, unknown> = {
       title: article.title,
       content: article.htmlContent || article.content,
+      excerpt: article.metaDescription || '',
       status: 'draft',
     };
 

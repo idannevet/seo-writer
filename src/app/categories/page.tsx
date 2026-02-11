@@ -104,7 +104,19 @@ export default function CategoriesPage() {
       {loading ? (
         <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-[#111] rounded-lg animate-pulse" />)}</div>
       ) : categories.length === 0 ? (
-        <div className="bg-[#111] border border-[#222] rounded-xl p-12 text-center text-[#9ca3af]">אין קטגוריות עדיין</div>
+        <div className="bg-[#111] border border-[#222] rounded-xl p-12 text-center space-y-6">
+          <div className="text-6xl">📁</div>
+          <div>
+            <p className="text-xl font-semibold text-white mb-2">אין קטגוריות עדיין</p>
+            <p className="text-sm text-[#9ca3af] mb-6">צור קטגוריה ראשונה כדי לארגן את המאמרים שלך</p>
+          </div>
+          <button
+            onClick={() => { resetForm(); setShowForm(true) }}
+            className="inline-flex items-center gap-2 bg-[#C8FF00] hover:bg-[#B0E000] text-black px-6 py-3 rounded-xl font-bold text-sm transition-colors"
+          >
+            ✨ צור קטגוריה ראשונה
+          </button>
+        </div>
       ) : (
         <div className="grid gap-3">
           {categories.map(c => (

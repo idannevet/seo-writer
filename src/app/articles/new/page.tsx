@@ -19,6 +19,15 @@ const WORD_PRESETS = [
   { label: '1,500-2,000', min: 1500, max: 2000 },
 ]
 
+const GENERATING_STEPS = [
+  'מנתח את הנושא והמילות מפתח...',
+  'בונה מבנה למאמר...',
+  'כותב את התוכן...',
+  'מוסיף כותרות ופסקאות...',
+  'בודק איכות ו-SEO...',
+  'מסיים את המאמר...',
+]
+
 export default function NewArticlePage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [title, setTitle] = useState('')
@@ -32,12 +41,28 @@ export default function NewArticlePage() {
   const [sources, setSources] = useState<string[]>([''])
   const [customInstructions, setCustomInstructions] = useState('')
   const [generating, setGenerating] = useState(false)
+  const [generatingStep, setGeneratingStep] = useState(0)
   const [suggestingSource, setSuggestingSource] = useState(false)
   const [suggestedSources, setSuggestedSources] = useState<SuggestedSource[]>([])
+  const [metaDescription, setMetaDescription] = useState('')
+  const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    fetch('/api/categories').then(r => r.json()).then(setCategories)
+    fetch('/api/categories')
+      .then(r => r.json())
+      .then(setCategories)
+      .catch(() => toast.error('שגיאה בטעינת קטגוריות'))
   }, [])
+
+  // Animate generating steps
+  useEffect(() => {
+    if (!generating) return
+    setGeneratingStep(0)
+    const interval = setInterval(() => {
+      setGeneratingStep(prev => (prev + 1) % GENERATING_STEPS.length)
+    }, 4000)
+    return () => clearInterval(interval)
+  }, [generating])
 
   const selectedCategory = categories.find(c => c.id === categoryId)
   const topics = selectedCategory?.topics || []
@@ -80,9 +105,20 @@ export default function NewArticlePage() {
     setSuggestedSources(suggestedSources.filter(s => s.url !== url))
   }
 
+  const validate = (): boolean => {
+    const newErrors: Record<string, string> = {}
+    if (!title.trim()) newErrors.title = 'חובה להזין כותרת למאמר'
+    if (!writingTopic.trim()) newErrors.writingTopic = 'חובה להזין תיאור נושא לכתיבה'
+    if (keywords.length === 0) newErrors.keywords = 'חובה להוסיף לפחות מילת מפתח אחת'
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleGenerate = async () => {
-    if (!title.trim()) { toast.error('הזן כותרת'); return }
-    if (!writingTopic.trim()) { toast.error('הזן נושא לכתיבה'); return }
+    if (!validate()) {
+      toast.error('יש לתקן את השגיאות בטופס')
+      return
+    }
 
     setGenerating(true)
     try {
@@ -99,13 +135,15 @@ export default function NewArticlePage() {
           keywords,
           sources: sources.filter(s => s.trim()),
           customInstructions: customInstructions || null,
+          metaDescription: metaDescription || null,
         }),
       })
       const data = await res.json()
       if (data.error) {
         toast.error(data.error)
       } else {
-        toast.success('המאמר נוצר בהצלחה!')
+        const wc = data.article.wordCount || 0
+        toast.success(`המאמר נוצר בהצלחה! (${wc} מילים)`)
         window.location.href = `/articles/${data.article.id}`
       }
     } catch {
@@ -115,31 +153,60 @@ export default function NewArticlePage() {
     }
   }
 
+  if (generating) {
+    return (
+      <div className="max-w-3xl mx-auto flex flex-col items-center justify-center py-20 space-y-8">
+        <div className="relative">
+          <div className="w-24 h-24 rounded-full border-4 border-[#222] border-t-[#C8FF00] animate-spin" />
+          <span className="absolute inset-0 flex items-center justify-center text-3xl">✨</span>
+        </div>
+        <div className="text-center space-y-3">
+          <h2 className="text-2xl font-bold text-white">מייצר מאמר...</h2>
+          <p className="text-[#C8FF00] text-lg animate-pulse">{GENERATING_STEPS[generatingStep]}</p>
+          <p className="text-sm text-[#9ca3af]">התהליך עשוי לקחת עד דקה, אנא המתן</p>
+        </div>
+        {/* Skeleton preview */}
+        <div className="w-full space-y-3 mt-8">
+          <div className="h-6 bg-[#111] rounded-lg w-3/4 animate-pulse" />
+          <div className="h-4 bg-[#111] rounded-lg w-full animate-pulse" />
+          <div className="h-4 bg-[#111] rounded-lg w-full animate-pulse" />
+          <div className="h-4 bg-[#111] rounded-lg w-5/6 animate-pulse" />
+          <div className="h-6 bg-[#111] rounded-lg w-1/2 animate-pulse mt-4" />
+          <div className="h-4 bg-[#111] rounded-lg w-full animate-pulse" />
+          <div className="h-4 bg-[#111] rounded-lg w-full animate-pulse" />
+          <div className="h-4 bg-[#111] rounded-lg w-2/3 animate-pulse" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold">מאמר חדש</h1>
 
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-[#9ca3af] mb-1">כותרת</label>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-1">כותרת <span className="text-[#ff4444]">*</span></label>
         <input
           value={title}
-          onChange={e => setTitle(e.target.value)}
-          className="w-full bg-[#111] border border-[#333] rounded-lg px-4 py-3 text-white outline-none"
+          onChange={e => { setTitle(e.target.value); setErrors(prev => ({ ...prev, title: '' })) }}
+          className={`w-full bg-[#111] border rounded-lg px-4 py-3 text-white outline-none ${errors.title ? 'border-[#ff4444]' : 'border-[#333]'}`}
           placeholder="כותרת המאמר..."
         />
+        {errors.title && <p className="text-xs text-[#ff4444] mt-1">{errors.title}</p>}
       </div>
 
       {/* Writing Topic */}
       <div>
-        <label className="block text-sm font-medium text-[#9ca3af] mb-1">נושא לכתיבה</label>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-1">נושא לכתיבה <span className="text-[#ff4444]">*</span></label>
         <textarea
           value={writingTopic}
-          onChange={e => setWritingTopic(e.target.value)}
+          onChange={e => { setWritingTopic(e.target.value); setErrors(prev => ({ ...prev, writingTopic: '' })) }}
           rows={3}
-          className="w-full bg-[#111] border border-[#333] rounded-lg px-4 py-3 text-white outline-none resize-none"
+          className={`w-full bg-[#111] border rounded-lg px-4 py-3 text-white outline-none resize-none ${errors.writingTopic ? 'border-[#ff4444]' : 'border-[#333]'}`}
           placeholder="תאר בקצרה על מה המאמר צריך לדבר..."
         />
+        {errors.writingTopic && <p className="text-xs text-[#ff4444] mt-1">{errors.writingTopic}</p>}
       </div>
 
       {/* Word Range */}
@@ -180,7 +247,7 @@ export default function NewArticlePage() {
       </div>
 
       {/* Category & Topic */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-[#9ca3af] mb-1">קטגוריה</label>
           <select
@@ -212,13 +279,13 @@ export default function NewArticlePage() {
 
       {/* Keywords */}
       <div>
-        <label className="block text-sm font-medium text-[#9ca3af] mb-1">מילות מפתח</label>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-1">מילות מפתח <span className="text-[#ff4444]">*</span></label>
         <div className="flex gap-2">
           <input
             value={keywordsInput}
-            onChange={e => setKeywordsInput(e.target.value)}
+            onChange={e => { setKeywordsInput(e.target.value); setErrors(prev => ({ ...prev, keywords: '' })) }}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addKeyword() } }}
-            className="flex-1 bg-[#111] border border-[#333] rounded-lg px-4 py-2 text-white outline-none"
+            className={`flex-1 bg-[#111] border rounded-lg px-4 py-2 text-white outline-none ${errors.keywords && keywords.length === 0 ? 'border-[#ff4444]' : 'border-[#333]'}`}
             placeholder="הזן מילות מפתח, מופרדות בפסיק..."
           />
           <button
@@ -228,12 +295,13 @@ export default function NewArticlePage() {
             הוסף
           </button>
         </div>
+        {errors.keywords && keywords.length === 0 && <p className="text-xs text-[#ff4444] mt-1">{errors.keywords}</p>}
         {keywords.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {keywords.map(kw => (
               <span key={kw} className="bg-[#C8FF00]/15 text-[#C8FF00] px-3 py-1 rounded-full text-sm flex items-center gap-1 border border-[#C8FF00]/30">
                 {kw}
-                <button onClick={() => removeKeyword(kw)} className="hover:text-[#ff4444]">×</button>
+                <button onClick={() => removeKeyword(kw)} className="hover:text-[#ff4444] mr-1">×</button>
               </span>
             ))}
           </div>
@@ -252,15 +320,19 @@ export default function NewArticlePage() {
               placeholder="https://..."
               dir="ltr"
             />
-            {sources.length > 1 && (
-              <button onClick={() => removeSource(i)} className="text-[#ff4444] hover:text-red-300 px-2">×</button>
-            )}
+            <button
+              onClick={() => removeSource(i)}
+              className="text-[#ff4444] hover:text-red-300 px-2 text-lg"
+              title="הסר מקור"
+            >
+              ×
+            </button>
           </div>
         ))}
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={addSourceField}
-            className="text-sm text-[#9ca3af] hover:text-white"
+            className="text-sm bg-[#1a1a1a] border border-[#333] hover:border-[#C8FF00] hover:text-[#C8FF00] px-3 py-1.5 rounded-lg transition-colors"
           >
             + הוסף מקור
           </button>
@@ -292,6 +364,19 @@ export default function NewArticlePage() {
         )}
       </div>
 
+      {/* Meta Description */}
+      <div>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-1">תיאור מטא (Meta Description)</label>
+        <textarea
+          value={metaDescription}
+          onChange={e => setMetaDescription(e.target.value)}
+          rows={2}
+          className="w-full bg-[#111] border border-[#333] rounded-lg px-4 py-3 text-white outline-none resize-none"
+          placeholder="תיאור קצר למנועי חיפוש (עד 160 תווים)..."
+        />
+        <p className="text-xs text-[#9ca3af] mt-1">{metaDescription.length}/160 תווים</p>
+      </div>
+
       {/* Custom Instructions */}
       <div>
         <label className="block text-sm font-medium text-[#9ca3af] mb-1">הנחיות נוספות</label>
@@ -310,14 +395,7 @@ export default function NewArticlePage() {
         disabled={generating}
         className="w-full bg-[#C8FF00] hover:bg-[#B0E000] disabled:bg-[#C8FF00]/30 disabled:cursor-not-allowed text-black font-bold py-4 rounded-xl text-lg transition-colors"
       >
-        {generating ? (
-          <span className="flex items-center justify-center gap-2">
-            <span className="animate-spin">⏳</span>
-            יוצר מאמר... (זה עשוי לקחת עד דקה)
-          </span>
-        ) : (
-          'צור מאמר ✨'
-        )}
+        צור מאמר ✨
       </button>
     </div>
   )

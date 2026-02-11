@@ -40,6 +40,7 @@ model Article {
   keywords           String          @default("[]")
   sources            String          @default("[]")
   customInstructions String?
+  metaDescription    String?
   wordRangeMin       Int             @default(700)
   wordRangeMax       Int             @default(1000)
   wpPostId           String?
@@ -52,6 +53,12 @@ model Article {
   createdAt          DateTime        @default(now())
   updatedAt          DateTime        @updatedAt
   publishedAt        DateTime?
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
 }
 
 model GenerationLog {

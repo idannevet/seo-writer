@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
       keywords = [],
       sources = [],
       customInstructions,
+      metaDescription,
     } = body
 
     if (!title || !writingTopic) {
@@ -86,6 +87,7 @@ export async function POST(req: NextRequest) {
         keywords: JSON.stringify(keywords),
         sources: JSON.stringify(sources),
         customInstructions,
+        metaDescription: metaDescription || null,
         wordRangeMin,
         wordRangeMax,
         categoryId: categoryId || null,

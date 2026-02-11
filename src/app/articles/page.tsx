@@ -1,16 +1,20 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { formatDate, getStatusLabel, getStatusColor } from '@/lib/utils'
 import { toast } from 'sonner'
 
 interface Article {
-  id: string; title: string; status: string; wordCount: number; createdAt: string;
+  id: string; title: string; status: string; wordCount: number;
+  createdAt: string; updatedAt: string;
   category: { name: string; color: string } | null;
   topic: { name: string } | null;
 }
 
 interface Category { id: string; name: string }
+
+type SortField = 'title' | 'updatedAt' | 'wordCount' | 'status'
+type SortDir = 'asc' | 'desc'
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState<Article[]>([])
@@ -20,20 +24,30 @@ export default function ArticlesPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
   const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [sortField, setSortField] = useState<SortField>('updatedAt')
+  const [sortDir, setSortDir] = useState<SortDir>('desc')
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>()
 
-  const fetchArticles = () => {
+  const fetchArticles = useCallback((searchVal?: string) => {
     const params = new URLSearchParams()
     if (statusFilter) params.set('status', statusFilter)
     if (categoryFilter) params.set('categoryId', categoryFilter)
-    if (search) params.set('search', search)
+    const s = searchVal !== undefined ? searchVal : search
+    if (s) params.set('search', s)
     fetch(`/api/articles?${params}`)
       .then(r => r.json())
       .then(setArticles)
       .finally(() => setLoading(false))
-  }
+  }, [statusFilter, categoryFilter, search])
 
   useEffect(() => { fetchArticles() }, [statusFilter, categoryFilter])
   useEffect(() => { fetch('/api/categories').then(r => r.json()).then(setCategories) }, [])
+
+  const handleSearchChange = (val: string) => {
+    setSearch(val)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => fetchArticles(val), 400)
+  }
 
   const handleSearch = (e: React.FormEvent) => { e.preventDefault(); fetchArticles() }
 
@@ -53,6 +67,48 @@ export default function ArticlesPage() {
     fetchArticles()
   }
 
+  const duplicateArticle = async (a: Article) => {
+    try {
+      const res = await fetch(`/api/articles/${a.id}`)
+      const full = await res.json()
+      const dupRes = await fetch('/api/articles/duplicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: a.id }),
+      })
+      if (dupRes.ok) {
+        toast.success('המאמר שוכפל')
+        fetchArticles()
+      } else {
+        toast.error('שגיאה בשכפול')
+      }
+    } catch { toast.error('שגיאה בשכפול') }
+  }
+
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortDir(d => d === 'asc' ? 'desc' : 'asc')
+    } else {
+      setSortField(field)
+      setSortDir(field === 'title' ? 'asc' : 'desc')
+    }
+  }
+
+  const sorted = [...articles].sort((a, b) => {
+    let cmp = 0
+    switch (sortField) {
+      case 'title': cmp = a.title.localeCompare(b.title, 'he'); break
+      case 'updatedAt': cmp = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime(); break
+      case 'wordCount': cmp = a.wordCount - b.wordCount; break
+      case 'status': cmp = a.status.localeCompare(b.status); break
+    }
+    return sortDir === 'asc' ? cmp : -cmp
+  })
+
+  const SortIcon = ({ field }: { field: SortField }) => (
+    <span className="mr-1 text-[10px]">{sortField === field ? (sortDir === 'asc' ? '▲' : '▼') : '⇅'}</span>
+  )
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -67,7 +123,7 @@ export default function ArticlesPage() {
         <form onSubmit={handleSearch} className="flex gap-2">
           <input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => handleSearchChange(e.target.value)}
             className="bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-sm text-white outline-none w-60"
             placeholder="חיפוש לפי כותרת..."
           />
@@ -123,16 +179,25 @@ export default function ArticlesPage() {
                     className="rounded accent-[#C8FF00]"
                   />
                 </th>
-                <th className="text-right p-3">כותרת</th>
+                <th className="text-right p-3 cursor-pointer select-none hover:text-white" onClick={() => handleSort('title')}>
+                  כותרת <SortIcon field="title" />
+                </th>
                 <th className="text-right p-3">קטגוריה</th>
-                <th className="text-right p-3">סטטוס</th>
-                <th className="text-right p-3">מילים</th>
-                <th className="text-right p-3">תאריך</th>
+                <th className="text-right p-3 cursor-pointer select-none hover:text-white" onClick={() => handleSort('status')}>
+                  סטטוס <SortIcon field="status" />
+                </th>
+                <th className="text-right p-3 cursor-pointer select-none hover:text-white" onClick={() => handleSort('wordCount')}>
+                  מילים <SortIcon field="wordCount" />
+                </th>
+                <th className="text-right p-3 cursor-pointer select-none hover:text-white" onClick={() => handleSort('updatedAt')}>
+                  עודכן <SortIcon field="updatedAt" />
+                </th>
+                <th className="p-3 w-10"></th>
               </tr>
             </thead>
             <tbody>
-              {articles.map(a => (
-                <tr key={a.id} className="border-b border-[#222]/50 hover:bg-[#1a1a1a]">
+              {sorted.map(a => (
+                <tr key={a.id} className="border-b border-[#222]/50 hover:bg-[#1a1a1a] group">
                   <td className="p-3">
                     <input
                       type="checkbox"
@@ -153,7 +218,16 @@ export default function ArticlesPage() {
                     </span>
                   </td>
                   <td className="p-3 text-sm text-[#9ca3af]">{a.wordCount}</td>
-                  <td className="p-3 text-sm text-[#9ca3af]">{formatDate(a.createdAt)}</td>
+                  <td className="p-3 text-sm text-[#9ca3af]">{formatDate(a.updatedAt)}</td>
+                  <td className="p-3">
+                    <button
+                      onClick={() => duplicateArticle(a)}
+                      className="opacity-0 group-hover:opacity-100 text-xs text-[#9ca3af] hover:text-[#C8FF00] transition-all"
+                      title="שכפל"
+                    >
+                      שכפל
+                    </button>
+                  </td>
                 </tr>
               ))}
             </tbody>

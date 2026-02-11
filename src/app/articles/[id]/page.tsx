@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import dynamic from 'next/dynamic'
@@ -12,6 +12,7 @@ interface Article {
   id: string; title: string; htmlContent: string | null; status: string;
   wordCount: number; wordRangeMin: number; wordRangeMax: number;
   keywords: string; sources: string; customInstructions: string | null;
+  metaDescription: string | null;
   categoryId: string | null; topicId: string | null;
   createdAt: string; updatedAt: string;
   category: { name: string; color: string } | null;
@@ -25,10 +26,21 @@ export default function ArticleEditorPage() {
   const [article, setArticle] = useState<Article | null>(null)
   const [content, setContent] = useState('')
   const [title, setTitle] = useState('')
+  const [metaDescription, setMetaDescription] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
+  const [regenerating, setRegenerating] = useState(false)
   const [liveWordCount, setLiveWordCount] = useState(0)
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle')
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout>>()
+  const contentRef = useRef(content)
+  const titleRef = useRef(title)
+  const metaRef = useRef(metaDescription)
+
+  useEffect(() => { contentRef.current = content }, [content])
+  useEffect(() => { titleRef.current = title }, [title])
+  useEffect(() => { metaRef.current = metaDescription }, [metaDescription])
 
   useEffect(() => {
     fetch(`/api/articles/${params.id}`)
@@ -37,34 +49,116 @@ export default function ArticleEditorPage() {
         setArticle(a)
         setContent(a.htmlContent || '')
         setTitle(a.title)
+        setMetaDescription(a.metaDescription || '')
         setLiveWordCount(countWords(a.htmlContent || ''))
         setLoading(false)
       })
       .catch(() => { toast.error('שגיאה בטעינת המאמר'); setLoading(false) })
   }, [params.id])
 
-  const handleContentChange = useCallback((html: string) => {
-    setContent(html)
-    setLiveWordCount(countWords(html))
-  }, [])
+  // Keyboard shortcut Ctrl+S
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault()
+        doSave()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [article])
 
-  const handleSave = async (newStatus?: string) => {
+  const doSave = async (newStatus?: string) => {
     setSaving(true)
+    setAutoSaveStatus('saving')
     try {
       const res = await fetch(`/api/articles/${params.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title,
-          htmlContent: content,
+          title: titleRef.current,
+          htmlContent: contentRef.current,
+          metaDescription: metaRef.current || null,
           status: newStatus || article?.status || 'edited',
         }),
       })
       const data = await res.json()
       setArticle(prev => prev ? { ...prev, ...data } : prev)
-      toast.success('נשמר בהצלחה')
+      setAutoSaveStatus('saved')
+      setTimeout(() => setAutoSaveStatus('idle'), 2000)
+      return data
     } catch { toast.error('שגיאה בשמירה') }
     finally { setSaving(false) }
+  }
+
+  const handleContentChange = useCallback((html: string) => {
+    setContent(html)
+    setLiveWordCount(countWords(html))
+    // Auto-save debounce
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(() => {
+      doSave()
+    }, 3000)
+  }, [article])
+
+  const handleSave = async (newStatus?: string) => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    const data = await doSave(newStatus)
+    if (data) toast.success('נשמר בהצלחה')
+  }
+
+  const handleRegenerate = async () => {
+    if (!confirm('האם אתה בטוח? התוכן הנוכחי יוחלף בתוכן חדש.')) return
+    setRegenerating(true)
+    try {
+      let kw: string[] = []
+      let src: string[] = []
+      try { kw = JSON.parse(article?.keywords || '[]') } catch {}
+      try { src = JSON.parse(article?.sources || '[]') } catch {}
+
+      const res = await fetch('/api/articles/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: titleRef.current,
+          writingTopic: titleRef.current,
+          wordRangeMin: article?.wordRangeMin || 700,
+          wordRangeMax: article?.wordRangeMax || 1000,
+          categoryId: article?.categoryId || null,
+          topicId: article?.topicId || null,
+          keywords: kw,
+          sources: src,
+          customInstructions: article?.customInstructions || null,
+        }),
+      })
+      const data = await res.json()
+      if (data.error) {
+        toast.error(data.error)
+      } else {
+        // Update current article with new content
+        const newContent = data.article.htmlContent || ''
+        await fetch(`/api/articles/${params.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            htmlContent: newContent,
+            status: 'generated',
+          }),
+        })
+        setContent(newContent)
+        setLiveWordCount(countWords(newContent))
+        // Delete the duplicate article that was created
+        if (data.article.id !== params.id) {
+          await fetch(`/api/articles/${data.article.id}`, { method: 'DELETE' })
+        }
+        toast.success(`המאמר נוצר מחדש! (${countWords(newContent)} מילים)`)
+        // Reload to get fresh data
+        const freshRes = await fetch(`/api/articles/${params.id}`)
+        const fresh = await freshRes.json()
+        setArticle(fresh)
+      }
+    } catch { toast.error('שגיאה ביצירה מחדש') }
+    finally { setRegenerating(false) }
   }
 
   const handleDelete = async () => {
@@ -118,25 +212,36 @@ export default function ArticleEditorPage() {
   const inRange = liveWordCount >= article.wordRangeMin && liveWordCount <= article.wordRangeMax
   const titleLength = title.length
   const titleHasKeyword = parsedKeywords.some(kw => title.includes(kw))
+  const hasMetaDesc = !!metaDescription.trim()
   const seoScore = [
     titleLength >= 20 && titleLength <= 70,
     titleHasKeyword,
     inRange,
     parsedKeywords.length > 0,
     liveWordCount > 300,
+    hasMetaDesc,
   ].filter(Boolean).length
 
+  const readingTime = Math.max(1, Math.round(liveWordCount / 200))
   const genLog = article.generationLogs?.[0]
 
   return (
     <div className="flex gap-6">
       {/* Main Editor */}
       <div className="flex-1 space-y-4">
-        <input
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-          className="w-full bg-transparent text-2xl font-bold text-white outline-none border-b border-[#222] pb-2"
-        />
+        <div className="flex items-center gap-3">
+          <input
+            value={title}
+            onChange={e => {
+              setTitle(e.target.value)
+              if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+              autoSaveTimer.current = setTimeout(() => doSave(), 3000)
+            }}
+            className="flex-1 bg-transparent text-2xl font-bold text-white outline-none border-b border-[#222] pb-2"
+          />
+          {autoSaveStatus === 'saving' && <span className="text-xs text-[#9ca3af] animate-pulse whitespace-nowrap">שומר...</span>}
+          {autoSaveStatus === 'saved' && <span className="text-xs text-[#C8FF00] whitespace-nowrap">✓ נשמר</span>}
+        </div>
 
         <div className="bg-[#111] rounded-xl border border-[#222] overflow-hidden">
           <Editor content={content} onChange={handleContentChange} />
@@ -149,7 +254,14 @@ export default function ArticleEditorPage() {
             disabled={saving}
             className="bg-[#C8FF00] hover:bg-[#B0E000] text-black px-6 py-2 rounded-lg text-sm font-bold disabled:opacity-50 transition-colors"
           >
-            {saving ? 'שומר...' : 'שמור טיוטה'}
+            {saving ? 'שומר...' : 'שמור'}
+          </button>
+          <button
+            onClick={handleRegenerate}
+            disabled={regenerating}
+            className="bg-[#1a1a1a] border border-[#333] hover:border-[#C8FF00] text-white px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
+          >
+            {regenerating ? '⏳ מייצר...' : '🔄 צור מחדש'}
           </button>
           <button
             onClick={handleExportDocx}
@@ -198,7 +310,7 @@ export default function ArticleEditorPage() {
           </span>
         </div>
 
-        {/* Word Count */}
+        {/* Word Count + Reading Time */}
         <div className="bg-[#111] border border-[#222] rounded-xl p-4">
           <h3 className="text-sm font-semibold text-[#9ca3af] mb-2">ספירת מילים</h3>
           <p className={`text-2xl font-bold ${inRange ? 'text-[#C8FF00]' : 'text-yellow-400'}`}>
@@ -213,13 +325,31 @@ export default function ArticleEditorPage() {
               style={{ width: `${Math.min(100, (liveWordCount / article.wordRangeMax) * 100)}%` }}
             />
           </div>
+          <p className="text-xs text-[#9ca3af] mt-2">⏱ זמן קריאה משוער: {readingTime} דק׳</p>
+        </div>
+
+        {/* Meta Description */}
+        <div className="bg-[#111] border border-[#222] rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-[#9ca3af] mb-2">תיאור מטא</h3>
+          <textarea
+            value={metaDescription}
+            onChange={e => {
+              setMetaDescription(e.target.value)
+              if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+              autoSaveTimer.current = setTimeout(() => doSave(), 3000)
+            }}
+            rows={3}
+            className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-3 py-2 text-white text-xs outline-none resize-none"
+            placeholder="תיאור מטא לקידום SEO..."
+          />
+          <p className="text-xs text-[#9ca3af] mt-1">{metaDescription.length}/160 תווים</p>
         </div>
 
         {/* SEO Score */}
         <div className="bg-[#111] border border-[#222] rounded-xl p-4">
           <h3 className="text-sm font-semibold text-[#9ca3af] mb-2">ציון SEO</h3>
-          <p className={`text-2xl font-bold ${seoScore >= 4 ? 'text-[#C8FF00]' : seoScore >= 2 ? 'text-yellow-400' : 'text-[#ff4444]'}`}>
-            {seoScore}/5
+          <p className={`text-2xl font-bold ${seoScore >= 5 ? 'text-[#C8FF00]' : seoScore >= 3 ? 'text-yellow-400' : 'text-[#ff4444]'}`}>
+            {seoScore}/6
           </p>
           <ul className="mt-2 space-y-1 text-xs">
             <li className={titleLength >= 20 && titleLength <= 70 ? 'text-[#C8FF00]' : 'text-[#9ca3af]'}>
@@ -236,6 +366,9 @@ export default function ArticleEditorPage() {
             </li>
             <li className={liveWordCount > 300 ? 'text-[#C8FF00]' : 'text-[#9ca3af]'}>
               {liveWordCount > 300 ? '✓' : '✗'} מעל 300 מילים
+            </li>
+            <li className={hasMetaDesc ? 'text-[#C8FF00]' : 'text-[#9ca3af]'}>
+              {hasMetaDesc ? '✓' : '✗'} תיאור מטא קיים
             </li>
           </ul>
         </div>

@@ -31,6 +31,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
   if (body.categoryId !== undefined) data.categoryId = body.categoryId
   if (body.topicId !== undefined) data.topicId = body.topicId
+  if (body.metaDescription !== undefined) data.metaDescription = body.metaDescription
   if (body.keywords !== undefined) data.keywords = JSON.stringify(body.keywords)
   if (body.sources !== undefined) data.sources = JSON.stringify(body.sources)
 
