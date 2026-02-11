@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  color       String    @default("#6366f1")
+  createdAt   DateTime  @default(now())
+  topics      Topic[]
+  articles    Article[]
+}
+
+model Topic {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  articles    Article[]
+}
+
+model Article {
+  id                 String          @id @default(cuid())
+  title              String
+  slug               String          @unique
+  content            String?
+  htmlContent        String?
+  status             String          @default("draft")
+  wordCount          Int             @default(0)
+  keywords           String          @default("[]")
+  sources            String          @default("[]")
+  customInstructions String?
+  wordRangeMin       Int             @default(700)
+  wordRangeMax       Int             @default(1000)
+  wpPostId           String?
+  wpUrl              String?
+  categoryId         String?
+  topicId            String?
+  category           Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  topic              Topic?          @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  generationLogs     GenerationLog[]
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  publishedAt        DateTime?
+}
+
+model GenerationLog {
+  id         String   @id @default(cuid())
+  articleId  String
+  article    Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  prompt     String
+  model      String
+  tokensUsed Int      @default(0)
+  duration   Int      @default(0)
+  createdAt  DateTime @default(now())
+}
