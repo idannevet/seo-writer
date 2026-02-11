@@ -10,6 +10,11 @@
   font-family: 'Heebo', sans-serif;
 }
 
+::selection {
+  background-color: rgba(200, 255, 0, 0.3);
+  color: #fff;
+}
+
 /* TipTap Editor Styles */
 .tiptap {
   outline: none;
@@ -28,7 +33,7 @@
   font-weight: 700;
   margin-top: 1.5rem;
   margin-bottom: 0.75rem;
-  color: #e2e8f0;
+  color: #ffffff;
 }
 
 .tiptap h3 {
@@ -36,7 +41,7 @@
   font-weight: 600;
   margin-top: 1.25rem;
   margin-bottom: 0.5rem;
-  color: #e2e8f0;
+  color: #ffffff;
 }
 
 .tiptap h4 {
@@ -44,7 +49,7 @@
   font-weight: 600;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
-  color: #e2e8f0;
+  color: #ffffff;
 }
 
 .tiptap ul {
@@ -64,16 +69,16 @@
 }
 
 .tiptap blockquote {
-  border-right: 3px solid #6366f1;
+  border-right: 3px solid #C8FF00;
   padding-right: 1rem;
   margin-right: 0;
-  color: #94a3b8;
+  color: #9ca3af;
   font-style: italic;
   margin-bottom: 0.75rem;
 }
 
 .tiptap a {
-  color: #818cf8;
+  color: #C8FF00;
   text-decoration: underline;
 }
 
@@ -104,14 +109,20 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #1f2937;
+  background: #0a0a0a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #4b5563;
+  background: #333333;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6b7280;
+  background: #555555;
+}
+
+/* Focus ring utility */
+input:focus, textarea:focus, select:focus {
+  border-color: #C8FF00 !important;
+  box-shadow: 0 0 0 1px #C8FF00;
 }

@@ -96,13 +96,13 @@ export default function ArticleEditorPage() {
 
   if (loading) {
     return <div className="animate-pulse space-y-4">
-      <div className="h-8 bg-gray-800 rounded w-1/3" />
-      <div className="h-96 bg-gray-800 rounded" />
+      <div className="h-8 bg-[#111] rounded w-1/3" />
+      <div className="h-96 bg-[#111] rounded" />
     </div>
   }
 
   if (!article) {
-    return <div className="text-center text-gray-500 py-20">מאמר לא נמצא</div>
+    return <div className="text-center text-[#9ca3af] py-20">מאמר לא נמצא</div>
   }
 
   const parsedKeywords: string[] = (() => {
@@ -135,10 +135,10 @@ export default function ArticleEditorPage() {
         <input
           value={title}
           onChange={e => setTitle(e.target.value)}
-          className="w-full bg-transparent text-2xl font-bold text-white outline-none border-b border-gray-800 pb-2"
+          className="w-full bg-transparent text-2xl font-bold text-white outline-none border-b border-[#222] pb-2"
         />
 
-        <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+        <div className="bg-[#111] rounded-xl border border-[#222] overflow-hidden">
           <Editor content={content} onChange={handleContentChange} />
         </div>
 
@@ -147,13 +147,13 @@ export default function ArticleEditorPage() {
           <button
             onClick={() => handleSave('edited')}
             disabled={saving}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+            className="bg-[#C8FF00] hover:bg-[#B0E000] text-black px-6 py-2 rounded-lg text-sm font-bold disabled:opacity-50 transition-colors"
           >
             {saving ? 'שומר...' : 'שמור טיוטה'}
           </button>
           <button
             onClick={handleExportDocx}
-            className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm"
+            className="bg-[#1a1a1a] border border-[#333] hover:border-[#C8FF00] text-white px-4 py-2 rounded-lg text-sm transition-colors"
           >
             📄 ייצוא DOCX
           </button>
@@ -175,13 +175,13 @@ export default function ArticleEditorPage() {
               finally { setUploading(false) }
             }}
             disabled={uploading}
-            className="bg-blue-700 hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50"
+            className="bg-[#1a1a1a] border border-[#C8FF00]/50 text-[#C8FF00] hover:bg-[#C8FF00]/10 px-4 py-2 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
           >
             {uploading ? '⏳ מעלה...' : '📤 העלה לוורדפרס'}
           </button>
           <button
             onClick={handleDelete}
-            className="bg-red-900/50 hover:bg-red-900 text-red-400 px-4 py-2 rounded-lg text-sm mr-auto"
+            className="bg-[#1a1a1a] border border-[#ff4444]/30 hover:bg-[#ff4444]/10 text-[#ff4444] px-4 py-2 rounded-lg text-sm mr-auto transition-colors"
           >
             🗑️ מחק
           </button>
@@ -191,50 +191,50 @@ export default function ArticleEditorPage() {
       {/* Side Panel */}
       <div className="w-72 shrink-0 space-y-4">
         {/* Status */}
-        <div className="bg-gray-900 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-gray-400 mb-2">סטטוס</h3>
+        <div className="bg-[#111] border border-[#222] rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-[#9ca3af] mb-2">סטטוס</h3>
           <span className={`text-xs px-2 py-1 rounded-full text-white ${getStatusColor(article.status)}`}>
             {getStatusLabel(article.status)}
           </span>
         </div>
 
         {/* Word Count */}
-        <div className="bg-gray-900 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-gray-400 mb-2">ספירת מילים</h3>
-          <p className={`text-2xl font-bold ${inRange ? 'text-green-400' : 'text-yellow-400'}`}>
+        <div className="bg-[#111] border border-[#222] rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-[#9ca3af] mb-2">ספירת מילים</h3>
+          <p className={`text-2xl font-bold ${inRange ? 'text-[#C8FF00]' : 'text-yellow-400'}`}>
             {liveWordCount}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-[#9ca3af]">
             יעד: {article.wordRangeMin} - {article.wordRangeMax}
           </p>
-          <div className="mt-2 h-2 bg-gray-800 rounded-full overflow-hidden">
+          <div className="mt-2 h-2 bg-[#1a1a1a] rounded-full overflow-hidden">
             <div
-              className={`h-full rounded-full transition-all ${inRange ? 'bg-green-500' : liveWordCount < article.wordRangeMin ? 'bg-yellow-500' : 'bg-red-500'}`}
+              className={`h-full rounded-full transition-all ${inRange ? 'bg-[#C8FF00]' : liveWordCount < article.wordRangeMin ? 'bg-yellow-500' : 'bg-[#ff4444]'}`}
               style={{ width: `${Math.min(100, (liveWordCount / article.wordRangeMax) * 100)}%` }}
             />
           </div>
         </div>
 
         {/* SEO Score */}
-        <div className="bg-gray-900 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-gray-400 mb-2">ציון SEO</h3>
-          <p className={`text-2xl font-bold ${seoScore >= 4 ? 'text-green-400' : seoScore >= 2 ? 'text-yellow-400' : 'text-red-400'}`}>
+        <div className="bg-[#111] border border-[#222] rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-[#9ca3af] mb-2">ציון SEO</h3>
+          <p className={`text-2xl font-bold ${seoScore >= 4 ? 'text-[#C8FF00]' : seoScore >= 2 ? 'text-yellow-400' : 'text-[#ff4444]'}`}>
             {seoScore}/5
           </p>
           <ul className="mt-2 space-y-1 text-xs">
-            <li className={titleLength >= 20 && titleLength <= 70 ? 'text-green-400' : 'text-gray-500'}>
+            <li className={titleLength >= 20 && titleLength <= 70 ? 'text-[#C8FF00]' : 'text-[#9ca3af]'}>
               {titleLength >= 20 && titleLength <= 70 ? '✓' : '✗'} אורך כותרת (20-70 תווים)
             </li>
-            <li className={titleHasKeyword ? 'text-green-400' : 'text-gray-500'}>
+            <li className={titleHasKeyword ? 'text-[#C8FF00]' : 'text-[#9ca3af]'}>
               {titleHasKeyword ? '✓' : '✗'} מילת מפתח בכותרת
             </li>
-            <li className={inRange ? 'text-green-400' : 'text-gray-500'}>
+            <li className={inRange ? 'text-[#C8FF00]' : 'text-[#9ca3af]'}>
               {inRange ? '✓' : '✗'} ספירת מילים בטווח
             </li>
-            <li className={parsedKeywords.length > 0 ? 'text-green-400' : 'text-gray-500'}>
+            <li className={parsedKeywords.length > 0 ? 'text-[#C8FF00]' : 'text-[#9ca3af]'}>
               {parsedKeywords.length > 0 ? '✓' : '✗'} מילות מפתח מוגדרות
             </li>
-            <li className={liveWordCount > 300 ? 'text-green-400' : 'text-gray-500'}>
+            <li className={liveWordCount > 300 ? 'text-[#C8FF00]' : 'text-[#9ca3af]'}>
               {liveWordCount > 300 ? '✓' : '✗'} מעל 300 מילים
             </li>
           </ul>
@@ -242,13 +242,13 @@ export default function ArticleEditorPage() {
 
         {/* Keyword Density */}
         {keywordDensity.length > 0 && (
-          <div className="bg-gray-900 rounded-xl p-4">
-            <h3 className="text-sm font-semibold text-gray-400 mb-2">צפיפות מילות מפתח</h3>
+          <div className="bg-[#111] border border-[#222] rounded-xl p-4">
+            <h3 className="text-sm font-semibold text-[#9ca3af] mb-2">צפיפות מילות מפתח</h3>
             <div className="space-y-2">
               {keywordDensity.map(kd => (
                 <div key={kd.keyword} className="flex justify-between text-sm">
-                  <span className="text-gray-300">{kd.keyword}</span>
-                  <span className={kd.count > 0 ? 'text-green-400' : 'text-red-400'}>
+                  <span className="text-white">{kd.keyword}</span>
+                  <span className={kd.count > 0 ? 'text-[#C8FF00]' : 'text-[#ff4444]'}>
                     {kd.count}×
                   </span>
                 </div>
@@ -258,31 +258,31 @@ export default function ArticleEditorPage() {
         )}
 
         {/* Metadata */}
-        <div className="bg-gray-900 rounded-xl p-4">
-          <h3 className="text-sm font-semibold text-gray-400 mb-2">פרטים</h3>
+        <div className="bg-[#111] border border-[#222] rounded-xl p-4">
+          <h3 className="text-sm font-semibold text-[#9ca3af] mb-2">פרטים</h3>
           <dl className="space-y-1 text-xs">
             {article.category && (
               <>
-                <dt className="text-gray-500">קטגוריה</dt>
-                <dd className="text-gray-300 mb-1">{article.category.name}</dd>
+                <dt className="text-[#9ca3af]">קטגוריה</dt>
+                <dd className="text-white mb-1">{article.category.name}</dd>
               </>
             )}
             {article.topic && (
               <>
-                <dt className="text-gray-500">נושא</dt>
-                <dd className="text-gray-300 mb-1">{article.topic.name}</dd>
+                <dt className="text-[#9ca3af]">נושא</dt>
+                <dd className="text-white mb-1">{article.topic.name}</dd>
               </>
             )}
-            <dt className="text-gray-500">נוצר</dt>
-            <dd className="text-gray-300 mb-1">{formatDate(article.createdAt)}</dd>
+            <dt className="text-[#9ca3af]">נוצר</dt>
+            <dd className="text-white mb-1">{formatDate(article.createdAt)}</dd>
             {genLog && (
               <>
-                <dt className="text-gray-500">מודל</dt>
-                <dd className="text-gray-300 mb-1">{genLog.model}</dd>
-                <dt className="text-gray-500">טוקנים</dt>
-                <dd className="text-gray-300 mb-1">{genLog.tokensUsed.toLocaleString()}</dd>
-                <dt className="text-gray-500">זמן יצירה</dt>
-                <dd className="text-gray-300">{(genLog.duration / 1000).toFixed(1)} שניות</dd>
+                <dt className="text-[#9ca3af]">מודל</dt>
+                <dd className="text-white mb-1">{genLog.model}</dd>
+                <dt className="text-[#9ca3af]">טוקנים</dt>
+                <dd className="text-white mb-1">{genLog.tokensUsed.toLocaleString()}</dd>
+                <dt className="text-[#9ca3af]">זמן יצירה</dt>
+                <dd className="text-white">{(genLog.duration / 1000).toFixed(1)} שניות</dd>
               </>
             )}
           </dl>

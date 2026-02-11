@@ -8,7 +8,7 @@ interface Category {
   _count: { articles: number; topics: number };
 }
 
-const COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#8b5cf6', '#06b6d4']
+const COLORS = ['#C8FF00', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444', '#8b5cf6', '#06b6d4']
 
 export default function CategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([])
@@ -17,7 +17,7 @@ export default function CategoriesPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [color, setColor] = useState('#6366f1')
+  const [color, setColor] = useState('#C8FF00')
 
   const fetchCategories = () => {
     fetch('/api/categories').then(r => r.json()).then(setCategories).finally(() => setLoading(false))
@@ -25,7 +25,7 @@ export default function CategoriesPage() {
 
   useEffect(() => { fetchCategories() }, [])
 
-  const resetForm = () => { setName(''); setDescription(''); setColor('#6366f1'); setEditingId(null); setShowForm(false) }
+  const resetForm = () => { setName(''); setDescription(''); setColor('#C8FF00'); setEditingId(null); setShowForm(false) }
 
   const handleSubmit = async () => {
     if (!name.trim()) { toast.error('הזן שם קטגוריה'); return }
@@ -58,7 +58,7 @@ export default function CategoriesPage() {
         <h1 className="text-2xl font-bold">קטגוריות</h1>
         <button
           onClick={() => { resetForm(); setShowForm(true) }}
-          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm"
+          className="bg-[#C8FF00] hover:bg-[#B0E000] text-black px-4 py-2 rounded-lg text-sm font-bold transition-colors"
         >
           ➕ קטגוריה חדשה
         </button>
@@ -66,17 +66,17 @@ export default function CategoriesPage() {
 
       {/* Form */}
       {showForm && (
-        <div className="bg-gray-900 rounded-xl p-4 space-y-3">
+        <div className="bg-[#111] border border-[#222] rounded-xl p-4 space-y-3">
           <input
             value={name}
             onChange={e => setName(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white outline-none"
+            className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-2 text-white outline-none"
             placeholder="שם הקטגוריה"
           />
           <input
             value={description}
             onChange={e => setDescription(e.target.value)}
-            className="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 text-white outline-none"
+            className="w-full bg-[#1a1a1a] border border-[#333] rounded-lg px-4 py-2 text-white outline-none"
             placeholder="תיאור (אופציונלי)"
           />
           <div className="flex gap-2">
@@ -90,10 +90,10 @@ export default function CategoriesPage() {
             ))}
           </div>
           <div className="flex gap-2">
-            <button onClick={handleSubmit} className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm">
+            <button onClick={handleSubmit} className="bg-[#C8FF00] hover:bg-[#B0E000] text-black px-4 py-2 rounded-lg text-sm font-bold transition-colors">
               {editingId ? 'עדכן' : 'צור'}
             </button>
-            <button onClick={resetForm} className="bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg text-sm">
+            <button onClick={resetForm} className="bg-[#1a1a1a] border border-[#333] hover:border-[#C8FF00] text-white px-4 py-2 rounded-lg text-sm transition-colors">
               ביטול
             </button>
           </div>
@@ -102,23 +102,23 @@ export default function CategoriesPage() {
 
       {/* List */}
       {loading ? (
-        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-gray-900 rounded-lg animate-pulse" />)}</div>
+        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-16 bg-[#111] rounded-lg animate-pulse" />)}</div>
       ) : categories.length === 0 ? (
-        <div className="bg-gray-900 rounded-xl p-12 text-center text-gray-500">אין קטגוריות עדיין</div>
+        <div className="bg-[#111] border border-[#222] rounded-xl p-12 text-center text-[#9ca3af]">אין קטגוריות עדיין</div>
       ) : (
         <div className="grid gap-3">
           {categories.map(c => (
-            <div key={c.id} className="bg-gray-900 rounded-xl p-4 flex items-center gap-4">
+            <div key={c.id} className="bg-[#111] border border-[#222] rounded-xl p-4 flex items-center gap-4 hover:border-[#333] transition-colors">
               <span className="w-4 h-4 rounded-full shrink-0" style={{ backgroundColor: c.color }} />
               <div className="flex-1">
-                <a href={`/categories/${c.id}/topics`} className="font-medium hover:text-indigo-400 transition-colors">
+                <a href={`/categories/${c.id}/topics`} className="font-medium hover:text-[#C8FF00] transition-colors">
                   {c.name}
                 </a>
-                {c.description && <p className="text-xs text-gray-500">{c.description}</p>}
+                {c.description && <p className="text-xs text-[#9ca3af]">{c.description}</p>}
               </div>
-              <span className="text-xs text-gray-500">{c._count.articles} מאמרים · {c._count.topics} נושאים</span>
-              <button onClick={() => handleEdit(c)} className="text-gray-400 hover:text-white text-sm">✏️</button>
-              <button onClick={() => handleDelete(c.id)} className="text-gray-400 hover:text-red-400 text-sm">🗑️</button>
+              <span className="text-xs text-[#9ca3af]">{c._count.articles} מאמרים · {c._count.topics} נושאים</span>
+              <button onClick={() => handleEdit(c)} className="text-[#9ca3af] hover:text-white text-sm">✏️</button>
+              <button onClick={() => handleDelete(c.id)} className="text-[#9ca3af] hover:text-[#ff4444] text-sm">🗑️</button>
             </div>
           ))}
         </div>

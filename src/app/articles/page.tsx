@@ -57,7 +57,7 @@ export default function ArticlesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">מאמרים</h1>
-        <a href="/articles/new" className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm">
+        <a href="/articles/new" className="bg-[#C8FF00] hover:bg-[#B0E000] text-black px-4 py-2 rounded-lg text-sm font-bold transition-colors">
           ➕ מאמר חדש
         </a>
       </div>
@@ -68,15 +68,15 @@ export default function ArticlesPage() {
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white outline-none w-60"
+            className="bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-sm text-white outline-none w-60"
             placeholder="חיפוש לפי כותרת..."
           />
-          <button type="submit" className="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-sm">🔍</button>
+          <button type="submit" className="bg-[#1a1a1a] border border-[#333] hover:border-[#C8FF00] px-3 py-2 rounded-lg text-sm transition-colors">🔍</button>
         </form>
         <select
           value={statusFilter}
           onChange={e => setStatusFilter(e.target.value)}
-          className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white outline-none"
+          className="bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-sm text-white outline-none"
         >
           <option value="">כל הסטטוסים</option>
           <option value="draft">טיוטה</option>
@@ -87,13 +87,13 @@ export default function ArticlesPage() {
         <select
           value={categoryFilter}
           onChange={e => setCategoryFilter(e.target.value)}
-          className="bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm text-white outline-none"
+          className="bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-sm text-white outline-none"
         >
           <option value="">כל הקטגוריות</option>
           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         {selected.size > 0 && (
-          <button onClick={bulkDelete} className="bg-red-900/50 hover:bg-red-900 text-red-400 px-3 py-2 rounded-lg text-sm">
+          <button onClick={bulkDelete} className="bg-[#ff4444]/10 border border-[#ff4444]/30 hover:bg-[#ff4444]/20 text-[#ff4444] px-3 py-2 rounded-lg text-sm transition-colors">
             🗑️ מחק {selected.size} נבחרים
           </button>
         )}
@@ -101,17 +101,17 @@ export default function ArticlesPage() {
 
       {/* Table */}
       {loading ? (
-        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-14 bg-gray-900 rounded-lg animate-pulse" />)}</div>
+        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="h-14 bg-[#111] rounded-lg animate-pulse" />)}</div>
       ) : articles.length === 0 ? (
-        <div className="bg-gray-900 rounded-xl p-12 text-center text-gray-500">
+        <div className="bg-[#111] border border-[#222] rounded-xl p-12 text-center text-[#9ca3af]">
           <p className="text-lg">אין מאמרים</p>
-          <a href="/articles/new" className="text-indigo-400 hover:underline text-sm mt-2 block">צור מאמר חדש →</a>
+          <a href="/articles/new" className="text-[#C8FF00] hover:underline text-sm mt-2 block">צור מאמר חדש →</a>
         </div>
       ) : (
-        <div className="bg-gray-900 rounded-xl overflow-hidden">
+        <div className="bg-[#111] border border-[#222] rounded-xl overflow-hidden">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-gray-800 text-sm text-gray-400">
+              <tr className="border-b border-[#222] text-sm text-[#9ca3af]">
                 <th className="p-3 w-8">
                   <input
                     type="checkbox"
@@ -120,7 +120,7 @@ export default function ArticlesPage() {
                       if (selected.size === articles.length) setSelected(new Set())
                       else setSelected(new Set(articles.map(a => a.id)))
                     }}
-                    className="rounded"
+                    className="rounded accent-[#C8FF00]"
                   />
                 </th>
                 <th className="text-right p-3">כותרת</th>
@@ -132,28 +132,28 @@ export default function ArticlesPage() {
             </thead>
             <tbody>
               {articles.map(a => (
-                <tr key={a.id} className="border-b border-gray-800/50 hover:bg-gray-800/50">
+                <tr key={a.id} className="border-b border-[#222]/50 hover:bg-[#1a1a1a]">
                   <td className="p-3">
                     <input
                       type="checkbox"
                       checked={selected.has(a.id)}
                       onChange={() => toggleSelect(a.id)}
-                      className="rounded"
+                      className="rounded accent-[#C8FF00]"
                     />
                   </td>
                   <td className="p-3">
-                    <a href={`/articles/${a.id}`} className="text-indigo-400 hover:underline font-medium">
+                    <a href={`/articles/${a.id}`} className="text-[#C8FF00] hover:underline font-medium">
                       {a.title}
                     </a>
                   </td>
-                  <td className="p-3 text-sm text-gray-400">{a.category?.name || '—'}</td>
+                  <td className="p-3 text-sm text-[#9ca3af]">{a.category?.name || '—'}</td>
                   <td className="p-3">
                     <span className={`text-xs px-2 py-1 rounded-full text-white ${getStatusColor(a.status)}`}>
                       {getStatusLabel(a.status)}
                     </span>
                   </td>
-                  <td className="p-3 text-sm text-gray-400">{a.wordCount}</td>
-                  <td className="p-3 text-sm text-gray-400">{formatDate(a.createdAt)}</td>
+                  <td className="p-3 text-sm text-[#9ca3af]">{a.wordCount}</td>
+                  <td className="p-3 text-sm text-[#9ca3af]">{formatDate(a.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

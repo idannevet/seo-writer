@@ -121,39 +121,39 @@ export default function NewArticlePage() {
 
       {/* Title */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">כותרת</label>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-1">כותרת</label>
         <input
           value={title}
           onChange={e => setTitle(e.target.value)}
-          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"
+          className="w-full bg-[#111] border border-[#333] rounded-lg px-4 py-3 text-white outline-none"
           placeholder="כותרת המאמר..."
         />
       </div>
 
       {/* Writing Topic */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">נושא לכתיבה</label>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-1">נושא לכתיבה</label>
         <textarea
           value={writingTopic}
           onChange={e => setWritingTopic(e.target.value)}
           rows={3}
-          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none resize-none"
+          className="w-full bg-[#111] border border-[#333] rounded-lg px-4 py-3 text-white outline-none resize-none"
           placeholder="תאר בקצרה על מה המאמר צריך לדבר..."
         />
       </div>
 
       {/* Word Range */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-2">טווח מילים</label>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-2">טווח מילים</label>
         <div className="flex flex-wrap gap-2 mb-3">
           {WORD_PRESETS.map(p => (
             <button
               key={p.label}
               onClick={() => { setWordRangeMin(p.min); setWordRangeMax(p.max) }}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 wordRangeMin === p.min && wordRangeMax === p.max
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                  ? 'bg-[#C8FF00] text-black'
+                  : 'bg-[#1a1a1a] text-[#9ca3af] border border-[#333] hover:border-[#C8FF00] hover:text-white'
               }`}
             >
               {p.label}
@@ -165,15 +165,15 @@ export default function NewArticlePage() {
             type="number"
             value={wordRangeMin}
             onChange={e => setWordRangeMin(Number(e.target.value))}
-            className="w-32 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-center outline-none"
+            className="w-32 bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white text-center outline-none"
             placeholder="מינימום"
           />
-          <span className="text-gray-500 self-center">—</span>
+          <span className="text-[#9ca3af] self-center">—</span>
           <input
             type="number"
             value={wordRangeMax}
             onChange={e => setWordRangeMax(Number(e.target.value))}
-            className="w-32 bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white text-center outline-none"
+            className="w-32 bg-[#111] border border-[#333] rounded-lg px-3 py-2 text-white text-center outline-none"
             placeholder="מקסימום"
           />
         </div>
@@ -182,11 +182,11 @@ export default function NewArticlePage() {
       {/* Category & Topic */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">קטגוריה</label>
+          <label className="block text-sm font-medium text-[#9ca3af] mb-1">קטגוריה</label>
           <select
             value={categoryId}
             onChange={e => { setCategoryId(e.target.value); setTopicId('') }}
-            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none"
+            className="w-full bg-[#111] border border-[#333] rounded-lg px-4 py-3 text-white outline-none"
           >
             <option value="">בחר קטגוריה...</option>
             {categories.map(c => (
@@ -195,11 +195,11 @@ export default function NewArticlePage() {
           </select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-300 mb-1">נושא</label>
+          <label className="block text-sm font-medium text-[#9ca3af] mb-1">נושא</label>
           <select
             value={topicId}
             onChange={e => setTopicId(e.target.value)}
-            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white outline-none"
+            className="w-full bg-[#111] border border-[#333] rounded-lg px-4 py-3 text-white outline-none"
             disabled={!categoryId}
           >
             <option value="">בחר נושא...</option>
@@ -212,18 +212,18 @@ export default function NewArticlePage() {
 
       {/* Keywords */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">מילות מפתח</label>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-1">מילות מפתח</label>
         <div className="flex gap-2">
           <input
             value={keywordsInput}
             onChange={e => setKeywordsInput(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addKeyword() } }}
-            className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white outline-none"
+            className="flex-1 bg-[#111] border border-[#333] rounded-lg px-4 py-2 text-white outline-none"
             placeholder="הזן מילות מפתח, מופרדות בפסיק..."
           />
           <button
             onClick={addKeyword}
-            className="bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg text-sm"
+            className="bg-[#1a1a1a] border border-[#333] hover:border-[#C8FF00] hover:text-[#C8FF00] px-4 py-2 rounded-lg text-sm transition-colors"
           >
             הוסף
           </button>
@@ -231,9 +231,9 @@ export default function NewArticlePage() {
         {keywords.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {keywords.map(kw => (
-              <span key={kw} className="bg-indigo-900/50 text-indigo-300 px-3 py-1 rounded-full text-sm flex items-center gap-1">
+              <span key={kw} className="bg-[#C8FF00]/15 text-[#C8FF00] px-3 py-1 rounded-full text-sm flex items-center gap-1 border border-[#C8FF00]/30">
                 {kw}
-                <button onClick={() => removeKeyword(kw)} className="hover:text-red-400">×</button>
+                <button onClick={() => removeKeyword(kw)} className="hover:text-[#ff4444]">×</button>
               </span>
             ))}
           </div>
@@ -242,32 +242,32 @@ export default function NewArticlePage() {
 
       {/* Sources */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">מקורות מידע</label>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-1">מקורות מידע</label>
         {sources.map((s, i) => (
           <div key={i} className="flex gap-2 mb-2">
             <input
               value={s}
               onChange={e => updateSource(i, e.target.value)}
-              className="flex-1 bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 text-white outline-none text-sm"
+              className="flex-1 bg-[#111] border border-[#333] rounded-lg px-4 py-2 text-white outline-none text-sm"
               placeholder="https://..."
               dir="ltr"
             />
             {sources.length > 1 && (
-              <button onClick={() => removeSource(i)} className="text-red-400 hover:text-red-300 px-2">×</button>
+              <button onClick={() => removeSource(i)} className="text-[#ff4444] hover:text-red-300 px-2">×</button>
             )}
           </div>
         ))}
         <div className="flex gap-2">
           <button
             onClick={addSourceField}
-            className="text-sm text-gray-400 hover:text-white"
+            className="text-sm text-[#9ca3af] hover:text-white"
           >
             + הוסף מקור
           </button>
           <button
             onClick={suggestSources}
             disabled={suggestingSource}
-            className="text-sm text-indigo-400 hover:text-indigo-300 disabled:opacity-50"
+            className="text-sm text-[#C8FF00] hover:text-[#B0E000] disabled:opacity-50"
           >
             {suggestingSource ? '⏳ מחפש...' : '💡 הצע מקורות'}
           </button>
@@ -275,17 +275,17 @@ export default function NewArticlePage() {
 
         {/* Suggested Sources */}
         {suggestedSources.length > 0 && (
-          <div className="mt-3 bg-gray-900/50 rounded-lg p-3 space-y-2">
-            <p className="text-xs text-gray-400">מקורות מוצעים (לחץ להוספה):</p>
+          <div className="mt-3 bg-[#111] border border-[#222] rounded-lg p-3 space-y-2">
+            <p className="text-xs text-[#9ca3af]">מקורות מוצעים (לחץ להוספה):</p>
             {suggestedSources.map(s => (
               <button
                 key={s.url}
                 onClick={() => addSuggestedSource(s.url)}
-                className="block w-full text-right bg-gray-800 hover:bg-gray-700 rounded-lg p-2 transition-colors"
+                className="block w-full text-right bg-[#1a1a1a] hover:bg-[#222] border border-[#333] rounded-lg p-2 transition-colors"
               >
-                <p className="text-sm text-indigo-400">{s.title}</p>
-                <p className="text-xs text-gray-500 dir-ltr">{s.url}</p>
-                <p className="text-xs text-gray-400 mt-1">{s.description}</p>
+                <p className="text-sm text-[#C8FF00]">{s.title}</p>
+                <p className="text-xs text-[#9ca3af] dir-ltr">{s.url}</p>
+                <p className="text-xs text-[#9ca3af] mt-1">{s.description}</p>
               </button>
             ))}
           </div>
@@ -294,12 +294,12 @@ export default function NewArticlePage() {
 
       {/* Custom Instructions */}
       <div>
-        <label className="block text-sm font-medium text-gray-300 mb-1">הנחיות נוספות</label>
+        <label className="block text-sm font-medium text-[#9ca3af] mb-1">הנחיות נוספות</label>
         <textarea
           value={customInstructions}
           onChange={e => setCustomInstructions(e.target.value)}
           rows={2}
-          className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:border-indigo-500 outline-none resize-none"
+          className="w-full bg-[#111] border border-[#333] rounded-lg px-4 py-3 text-white outline-none resize-none"
           placeholder="הנחיות נוספות לכתיבה (אופציונלי)..."
         />
       </div>
@@ -308,7 +308,7 @@ export default function NewArticlePage() {
       <button
         onClick={handleGenerate}
         disabled={generating}
-        className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl text-lg transition-colors"
+        className="w-full bg-[#C8FF00] hover:bg-[#B0E000] disabled:bg-[#C8FF00]/30 disabled:cursor-not-allowed text-black font-bold py-4 rounded-xl text-lg transition-colors"
       >
         {generating ? (
           <span className="flex items-center justify-center gap-2">

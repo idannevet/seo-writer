@@ -5,6 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "SEO Writer - כתיבת מאמרי SEO",
   description: "מערכת לכתיבת מאמרי SEO באמצעות בינה מלאכותית",
+  themeColor: "#0a0a0a",
 };
 
 export default function RootLayout({
@@ -20,7 +21,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="font-heebo bg-gray-950 text-gray-100 min-h-screen antialiased">
+      <body className="font-heebo bg-[#0a0a0a] text-white min-h-screen antialiased">
         <div className="flex min-h-screen">
           <Sidebar />
           <main className="flex-1 overflow-auto">
@@ -43,10 +44,13 @@ export default function RootLayout({
 
 function Sidebar() {
   return (
-    <aside className="w-64 bg-gray-900 border-l border-gray-800 p-4 flex flex-col gap-2 shrink-0">
-      <div className="mb-6 px-2">
-        <h1 className="text-xl font-bold text-indigo-400">✍️ SEO Writer</h1>
-        <p className="text-xs text-gray-500 mt-1">מערכת כתיבת מאמרים</p>
+    <aside className="w-64 bg-black border-l border-[#222] p-4 flex flex-col gap-1 shrink-0">
+      <div className="mb-8 px-2">
+        <h1 className="text-xl font-bold text-white flex items-center gap-2">
+          <span className="bg-[#C8FF00] text-black w-8 h-8 rounded-lg flex items-center justify-center font-extrabold text-sm">a</span>
+          <span>SEO Writer</span>
+        </h1>
+        <p className="text-xs text-[#9ca3af] mt-1">מערכת כתיבת מאמרים</p>
       </div>
       <NavLink href="/" label="דשבורד" icon="📊" />
       <NavLink href="/articles/new" label="מאמר חדש" icon="➕" />
@@ -61,7 +65,7 @@ function NavLink({ href, label, icon }: { href: string; label: string; icon: str
   return (
     <a
       href={href}
-      className="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition-colors text-sm"
+      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[#9ca3af] hover:bg-[#111] hover:text-[#C8FF00] transition-colors text-sm"
     >
       <span>{icon}</span>
       <span>{label}</span>
